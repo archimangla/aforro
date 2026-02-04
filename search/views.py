@@ -15,9 +15,15 @@ class ProductSearchView(APIView):
         max_price = request.GET.get('max_price')
         store_id = request.GET.get('store_id')
         in_stock = request.GET.get('in_stock')
+        sort = request.GET.get('sort')
+
+        # pagination params
+        page = int(request.GET.get('page', 1))
+        page_size = int(request.GET.get('page_size', 10))
 
         products = Product.objects.select_related('category')
 
+        # keyword search
         if query:
             products = products.filter(
                 Q(title__icontains=query) |
@@ -25,6 +31,7 @@ class ProductSearchView(APIView):
                 Q(category__name__icontains=query)
             )
 
+        # filters
         if category:
             products = products.filter(category__name__iexact=category)
 
@@ -34,6 +41,7 @@ class ProductSearchView(APIView):
         if max_price:
             products = products.filter(price__lte=max_price)
 
+        # store + inventory context
         inventory_map = {}
 
         if store_id:
@@ -52,6 +60,22 @@ class ProductSearchView(APIView):
 
             products = products.filter(id__in=inventory_map.keys())
 
+        # sorting
+        if sort == 'price':
+            products = products.order_by('price')
+
+        elif sort == 'newest':
+            products = products.order_by('-id')
+
+        # relevance = default when query exists (do nothing extra)
+
+        # pagination
+        total_results = products.count()
+        start = (page - 1) * page_size
+        end = start + page_size
+        products = products[start:end]
+
+        # response build
         data = []
         for p in products:
             item = {
@@ -67,4 +91,10 @@ class ProductSearchView(APIView):
             data.append(item)
 
         serializer = ProductSearchSerializer(data, many=True)
-        return Response(serializer.data)
+
+        return Response({
+            "page": page,
+            "page_size": page_size,
+            "total_results": total_results,
+            "results": serializer.data
+        })
