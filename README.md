@@ -1,86 +1,44 @@
-\# Aforro – Backend Assignment
+# Aforro – Backend Developer Assignment
 
-
-
-Aforro is a backend service for a multi-store product marketplace.  
-
-It implements product search, autocomplete with rate limiting, inventory-aware ordering, and asynchronous order processing.
-
-
+This repository contains the backend implementation for the Aforro assignment.  
+The project is built using **Django**, **Django REST Framework**, **PostgreSQL**, **Redis**, **Celery**, and **Docker**.
 
 ---
 
+## Tech Stack
 
-
-\## Tech Stack
-
-
-
-\- Python 3.11
-
-\- Django 5 + Django REST Framework
-
-\- PostgreSQL
-
-\- Redis
-
-\- Celery
-
-\- Docker \& Docker Compose
-
-
+- Python 3.11
+- Django 5.x
+- Django REST Framework
+- PostgreSQL
+- Redis
+- Celery
+- Docker & Docker Compose
 
 ---
 
+## Project Setup (Using Docker)
 
-
-\## Core Features
-
-
-
-\- Product search with filtering
-
-\- Autocomplete suggestions with Redis-based rate limiting
-
-\- Atomic inventory checks and stock deduction during order creation
-
-\- Store-wise order listing with aggregation
-
-\- Asynchronous order confirmation using Celery
-
-\- Fully Dockerized development environment
-
-
+### Prerequisites
+- Docker
+- Docker Compose
 
 ---
 
+### Steps to Run
 
+1. Clone the repository:
+git clone <your-github-repo-url>
+cd aforro
 
-\## Project Structure
+2. Build and Start Services
+docker-compose up --build
 
+3. Run DB migrations
+docker-compose exec web python manage.py migrate
 
+4. 4. server will be available at:
+http://localhost:8000
 
-```text
-
-aforro/
-
-├── project/          # Django project configuration
-
-├── products/         # Product \& category models
-
-├── stores/           # Store \& inventory models
-
-├── orders/           # Orders \& order items
-
-├── search/           # Search \& autocomplete APIs
-
-├── docker-compose.yml
-
-├── Dockerfile
-
-├── requirements.txt
-
-└── README.md
-
-
-
+4. server will be available at:
+http://localhost:8000
