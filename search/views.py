@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from products.models import Product
 from stores.models import Inventory
 from .serializers import ProductSearchSerializer
-
+from rest_framework import status
 
 class ProductSearchView(APIView):
 
@@ -98,3 +98,37 @@ class ProductSearchView(APIView):
             "total_results": total_results,
             "results": serializer.data
         })
+
+
+
+class ProductSuggestView(APIView):
+
+    def get(self, request):
+        q = request.GET.get('q', '').strip()
+
+        if len(q) < 3:
+            return Response(
+                {"error": "Minimum 3 characters required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # prefix matches (higher priority)
+        prefix_matches = Product.objects.filter(
+            title__istartswith=q
+        ).values_list('title', flat=True)[:10]
+
+        # remaining matches
+        remaining_needed = 10 - len(prefix_matches)
+
+        suggestions = list(prefix_matches)
+
+        if remaining_needed > 0:
+            other_matches = Product.objects.filter(
+                title__icontains=q
+            ).exclude(
+                title__istartswith=q
+            ).values_list('title', flat=True)[:remaining_needed]
+
+            suggestions.extend(list(other_matches))
+
+        return Response(suggestions)
