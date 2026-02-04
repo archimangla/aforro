@@ -7,8 +7,9 @@ from rest_framework import status
 from stores.models import Store, Inventory
 from products.models import Product
 from .models import Order, OrderItem
-from .serializers import OrderCreateSerializer
+from .serializers import OrderCreateSerializer, StoreOrderListSerializer
 
+from django.db.models import Sum
 
 class OrderCreateView(APIView):
 
@@ -76,3 +77,17 @@ class OrderCreateView(APIView):
             },
             status=status.HTTP_201_CREATED
         )
+
+
+class StoreOrderListView(APIView):
+
+    def get(self, request, store_id):
+        orders = (
+            Order.objects
+            .filter(store_id=store_id)
+            .annotate(total_items=Sum('items__quantity_requested'))
+            .order_by('-created_at')
+        )
+
+        serializer = StoreOrderListSerializer(orders, many=True)
+        return Response(serializer.data)
